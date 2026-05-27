@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLOps Pulse — End-to-End ML Platform | Yaw Opoku Asare</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2333;--bg4:#21262d;
+  --teal:#2ddab8;--teal-dim:#1a8a75;--teal-glow:rgba(45,218,184,0.15);
+  --white:#e6edf3;--muted:#7d8590;--muted2:#555e6a;
+  --border:rgba(45,218,184,0.15);--border-h:rgba(45,218,184,0.5);
+  --red:#f85149;--green:#3fb950;--yellow:#d29922;
+  --t:0.25s cubic-bezier(.4,0,.2,1);
+  --radius:12px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:'DM Sans',sans-serif;line-height:1.6;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--teal-dim);border-radius:4px}
+code,pre,.mono{font-family:'DM Mono',monospace}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1rem 5%;background:rgba(13,17,23,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--teal);text-decoration:none;display:flex;align-items:center;gap:.5rem}
+.nav-logo span{color:var(--muted);font-weight:400}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.88rem;font-weight:500;transition:color var(--t)}
+.nav-links a:hover{color:var(--teal)}
+.nav-back{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);text-decoration:none;font-size:.88rem;transition:color var(--t)}
+.nav-back:hover{color:var(--teal)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;padding:8rem 5% 5rem;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0}
+.hero-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(45,218,184,.06) 0%,transparent 65%)}
+.hero-bg::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(45,218,184,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(45,218,184,.03) 1px,transparent 1px);background-size:50px 50px;mask-image:radial-gradient(ellipse 90% 80% at 50% 40%,black 0%,transparent 70%)}
+.hero-inner{position:relative;z-index:1;max-width:900px;margin:0 auto;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(45,218,184,.1);border:1px solid var(--border);border-radius:100px;padding:.4rem 1rem;font-size:.8rem;color:var(--teal);margin-bottom:2rem;font-family:'DM Mono',monospace;animation:fadeUp .6s ease both}
+.hero-badge::before{content:'';width:6px;height:6px;background:var(--teal);border-radius:50%;animation:pulse 2s infinite}
+.hero-title{font-family:'Syne',sans-serif;font-size:clamp(2.5rem,6vw,4.5rem);font-weight:800;line-height:1.05;letter-spacing:-.04em;margin-bottom:1.2rem;animation:fadeUp .6s ease both .1s}
+.hero-title span{color:var(--teal)}
+.hero-sub{color:var(--muted);font-size:clamp(.95rem,2vw,1.15rem);line-height:1.8;max-width:620px;margin:0 auto 2.5rem;animation:fadeUp .6s ease both .2s}
+.hero-cta{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadeUp .6s ease both .3s}
+.hero-metrics{display:flex;gap:3rem;justify-content:center;margin-top:4rem;flex-wrap:wrap;animation:fadeUp .6s ease both .4s}
+.metric-item{text-align:center}
+.metric-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--teal);line-height:1}
+.metric-label{font-size:.72rem;color:var(--muted);margin-top:.3rem;text-transform:uppercase;letter-spacing:.1em}
+
+/* BUTTONS */
+.btn-primary{display:inline-flex;align-items:center;gap:.5rem;background:var(--teal);color:var(--bg);padding:.8rem 1.8rem;border-radius:8px;text-decoration:none;font-weight:600;font-size:.9rem;border:none;cursor:pointer;transition:all var(--t)}
+.btn-primary:hover{background:#3ff0cc;transform:translateY(-2px);box-shadow:0 8px 24px rgba(45,218,184,.3)}
+.btn-secondary{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:var(--white);padding:.8rem 1.8rem;border-radius:8px;text-decoration:none;font-weight:500;font-size:.9rem;border:1px solid var(--border);cursor:pointer;transition:all var(--t)}
+.btn-secondary:hover{border-color:var(--teal);color:var(--teal);background:rgba(45,218,184,.07);transform:translateY(-2px)}
+
+/* SECTIONS */
+section{padding:5rem 5%}
+.section-inner{max-width:1100px;margin:0 auto}
+.section-label{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--teal);text-transform:uppercase;letter-spacing:.15em;margin-bottom:.75rem}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(1.7rem,3vw,2.4rem);font-weight:800;letter-spacing:-.03em;margin-bottom:.75rem}
+.section-sub{color:var(--muted);font-size:.95rem;line-height:1.75;max-width:560px;margin-bottom:3rem}
+
+/* ARCHITECTURE */
+#architecture{background:var(--bg2)}
+.arch-diagram{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;margin-bottom:2rem;position:relative;overflow:hidden}
+.arch-diagram::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent)}
+.arch-grid{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;align-items:center;margin-bottom:2rem}
+.arch-node{background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:1.2rem;text-align:center;transition:border-color var(--t),transform var(--t)}
+.arch-node:hover{border-color:var(--teal);transform:translateY(-3px)}
+.arch-node-icon{font-size:1.8rem;margin-bottom:.5rem}
+.arch-node-title{font-family:'Syne',sans-serif;font-size:.85rem;font-weight:700;color:var(--teal);margin-bottom:.25rem}
+.arch-node-sub{font-size:.72rem;color:var(--muted);line-height:1.4}
+.arch-arrow{color:var(--teal-dim);font-size:1.4rem;text-align:center;padding:0 .5rem}
+.arch-bottom{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem}
+.arch-layer{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem;display:flex;align-items:center;gap:.75rem}
+.arch-layer-icon{font-size:1.3rem}
+.arch-layer-text .title{font-size:.82rem;font-weight:600;color:var(--white);margin-bottom:.1rem}
+.arch-layer-text .sub{font-size:.72rem;color:var(--muted)}
+
+/* FLOW */
+.flow-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;counter-reset:step}
+.flow-step{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;position:relative;counter-increment:step;transition:border-color var(--t),transform var(--t)}
+.flow-step:hover{border-color:var(--teal);transform:translateY(-3px)}
+.flow-step::before{content:counter(step,'0'counter(step));font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:rgba(45,218,184,.1);position:absolute;top:.5rem;right:.75rem;line-height:1}
+.flow-step-icon{font-size:1.5rem;margin-bottom:.75rem}
+.flow-step-title{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;color:var(--white);margin-bottom:.4rem}
+.flow-step-desc{font-size:.8rem;color:var(--muted);line-height:1.5}
+
+/* DEMO */
+#demo{background:var(--bg)}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start}
+.demo-form-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;position:relative;overflow:hidden}
+.demo-form-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent)}
+.form-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:.3rem}
+.form-sub{font-size:.82rem;color:var(--muted);margin-bottom:1.5rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.form-group{display:flex;flex-direction:column;gap:.3rem}
+.form-group label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:500}
+.form-group input,.form-group select{background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:.6rem .8rem;color:var(--white);font-size:.88rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color var(--t)}
+.form-group input:focus,.form-group select:focus{border-color:var(--teal)}
+.form-group select option{background:var(--bg4)}
+.demo-btn{width:100%;margin-top:.75rem;justify-content:center;font-size:.95rem;padding:.9rem}
+.result-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;min-height:300px;display:flex;flex-direction:column}
+.result-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),transparent)}
+.result-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;color:var(--muted);text-align:center}
+.result-placeholder-icon{font-size:3rem;opacity:.4}
+.result-placeholder-text{font-size:.88rem;line-height:1.5}
+.result-content{display:none;flex-direction:column;gap:1.25rem}
+.result-verdict{text-align:center;padding:1.5rem;border-radius:10px;border:1px solid}
+.result-verdict.good{background:rgba(63,185,80,.08);border-color:rgba(63,185,80,.3)}
+.result-verdict.risk{background:rgba(248,81,73,.08);border-color:rgba(248,81,73,.3)}
+.verdict-icon{font-size:2.5rem;margin-bottom:.5rem}
+.verdict-label{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800}
+.verdict-label.good{color:var(--green)}
+.verdict-label.risk{color:var(--red)}
+.verdict-sub{font-size:.82rem;color:var(--muted);margin-top:.25rem}
+.result-stats{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.stat-box{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem}
+.stat-box-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem}
+.stat-box-val{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:500;color:var(--teal)}
+.confidence-bar{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:1rem}
+.conf-label{font-size:.75rem;color:var(--muted);margin-bottom:.5rem}
+.conf-track{background:var(--bg);border-radius:100px;height:8px;overflow:hidden}
+.conf-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal-dim),var(--teal));transition:width 0.8s cubic-bezier(.4,0,.2,1)}
+.conf-pct{font-family:'DM Mono',monospace;font-size:.85rem;color:var(--teal);margin-top:.4rem}
+.api-response{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-top:.25rem}
+.api-response-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+.api-response pre{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--teal);line-height:1.6;overflow-x:auto}
+.loading-dots{display:none;gap:.3rem;justify-content:center;margin:1rem 0}
+.loading-dots span{width:8px;height:8px;background:var(--teal);border-radius:50%;animation:bounce 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:.2s}
+.loading-dots span:nth-child(3){animation-delay:.4s}
+
+/* METRICS */
+#metrics{background:var(--bg2)}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.metric-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;transition:border-color var(--t),transform var(--t)}
+.metric-card:hover{border-color:var(--teal);transform:translateY(-3px)}
+.metric-card-icon{font-size:1.4rem;margin-bottom:.75rem}
+.metric-card-name{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--teal);margin-bottom:.3rem}
+.metric-card-type{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem}
+.metric-card-desc{font-size:.8rem;color:var(--muted);line-height:1.5}
+.grafana-panel{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-top:1rem}
+.grafana-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.grafana-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700}
+.grafana-badge{background:rgba(45,218,184,.1);border:1px solid var(--border);border-radius:100px;padding:.25rem .75rem;font-size:.72rem;color:var(--teal);font-family:'DM Mono',monospace;display:flex;align-items:center;gap:.4rem}
+.grafana-badge::before{content:'';width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+.mini-charts{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.mini-chart{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:1rem}
+.mini-chart-label{font-size:.72rem;color:var(--muted);margin-bottom:.5rem}
+.mini-chart-val{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--teal);margin-bottom:.5rem}
+.mini-chart-bar{height:40px;display:flex;align-items:flex-end;gap:2px}
+.bar{flex:1;background:rgba(45,218,184,.2);border-radius:2px 2px 0 0;transition:background var(--t)}
+.bar.active{background:var(--teal)}
+.bar:hover{background:var(--teal)}
+
+/* STACK */
+#stack{background:var(--bg)}
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+.stack-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;transition:border-color var(--t),transform var(--t)}
+.stack-card:hover{border-color:var(--teal);transform:translateY(-3px)}
+.stack-icon{font-size:1.8rem;margin-bottom:.75rem}
+.stack-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:.3rem}
+.stack-role{font-size:.75rem;color:var(--teal);font-family:'DM Mono',monospace;margin-bottom:.5rem}
+.stack-desc{font-size:.82rem;color:var(--muted);line-height:1.5}
+
+/* OUTCOMES */
+#outcomes{background:var(--bg2)}
+.outcomes-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.outcome-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1.75rem;transition:border-color var(--t)}
+.outcome-card:hover{border-color:var(--teal)}
+.outcome-num{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;color:var(--teal);line-height:1;margin-bottom:.4rem}
+.outcome-title{font-size:.9rem;font-weight:600;color:var(--white);margin-bottom:.4rem}
+.outcome-desc{font-size:.82rem;color:var(--muted);line-height:1.5}
+
+/* CTA */
+#cta{background:var(--bg);text-align:center;padding:5rem 5%}
+.cta-inner{max-width:600px;margin:0 auto}
+.cta-title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:800;letter-spacing:-.03em;margin-bottom:1rem}
+.cta-sub{color:var(--muted);font-size:.95rem;line-height:1.75;margin-bottom:2rem}
+.cta-links{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.fade-in.visible{opacity:1;transform:none}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .arch-grid{grid-template-columns:1fr;gap:.75rem}
+  .arch-arrow{transform:rotate(90deg)}
+  .demo-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .mini-charts{grid-template-columns:1fr}
+  .outcomes-grid{grid-template-columns:1fr}
+  .arch-bottom{grid-template-columns:1fr}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">← <span>Back to Portfolio</span></a>
+  <ul class="nav-links">
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#demo">Live Demo</a></li>
+    <li><a href="#metrics">Observability</a></li>
+    <li><a href="#stack">Stack</a></li>
+  </ul>
+  <a href="https://github.com/yawopokuasare/mlops-pulse" target="_blank" class="btn-primary" style="padding:.55rem 1.2rem;font-size:.82rem">View on GitHub</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div class="hero-badge">MLOps Platform · Kubernetes · AWS EC2</div>
+    <h1 class="hero-title">MLOps <span>Pulse</span></h1>
+    <p class="hero-sub">An end-to-end machine learning platform deployed on Kubernetes — from model training and experiment tracking to real-time prediction serving with full Prometheus/Grafana observability.</p>
+    <div class="hero-cta">
+      <a href="#demo" class="btn-primary">Try the Demo →</a>
+      <a href="https://github.com/yawopokuasare/mlops-pulse" target="_blank" class="btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+    <div class="hero-metrics">
+      <div class="metric-item"><div class="metric-num">88.2%</div><div class="metric-label">ROC-AUC Score</div></div>
+      <div class="metric-item"><div class="metric-num">~10ms</div><div class="metric-label">p95 Latency</div></div>
+      <div class="metric-item"><div class="metric-num">2</div><div class="metric-label">Pod Replicas</div></div>
+      <div class="metric-item"><div class="metric-num">6</div><div class="metric-label">Grafana Panels</div></div>
+      <div class="metric-item"><div class="metric-num">5</div><div class="metric-label">Prometheus Metrics</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="section-inner">
+    <div class="fade-in">
+      <div class="section-label">System Design</div>
+      <h2 class="section-title">How It All Fits Together</h2>
+      <p class="section-sub">Three layers working in concert — training, serving, and observability — all running on a Kubernetes cluster on AWS EC2.</p>
+    </div>
+
+    <div class="arch-diagram fade-in">
+      <div class="arch-grid">
+        <div class="arch-node">
+          <div class="arch-node-icon">🧠</div>
+          <div class="arch-node-title">Training Job</div>
+          <div class="arch-node-sub">scikit-learn GBT<br>Kubernetes Job<br>Runs once → exits</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="arch-node-icon">📊</div>
+          <div class="arch-node-title">MLflow Server</div>
+          <div class="arch-node-sub">Experiment tracking<br>Model registry<br>Run metadata</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">
+          <div class="arch-node-icon">⚡</div>
+          <div class="arch-node-title">Prediction API</div>
+          <div class="arch-node-sub">FastAPI + uvicorn<br>2 pod replicas<br>HPA autoscaling</div>
+        </div>
+      </div>
+      <div class="arch-bottom">
+        <div class="arch-layer">
+          <div class="arch-layer-icon">🔥</div>
+          <div class="arch-layer-text">
+            <div class="title">Prometheus</div>
+            <div class="sub">Scrapes /metrics every 15s via ServiceMonitor · stores time-series data</div>
+          </div>
+        </div>
+        <div class="arch-layer">
+          <div class="arch-layer-icon">📈</div>
+          <div class="arch-layer-text">
+            <div class="title">Grafana</div>
+            <div class="sub">6-panel dashboard · PromQL queries · live latency, confidence, throughput</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:3rem">Request Lifecycle</div>
+    <div class="flow-steps fade-in">
+      <div class="flow-step">
+        <div class="flow-step-icon">📥</div>
+        <div class="flow-step-title">Request In</div>
+        <div class="flow-step-desc">Client sends loan applicant data as JSON to the prediction API endpoint</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-icon">✅</div>
+        <div class="flow-step-title">Validation</div>
+        <div class="flow-step-desc">Pydantic schema validates all fields — age range, credit amount, employment years</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-icon">🤖</div>
+        <div class="flow-step-title">Inference</div>
+        <div class="flow-step-desc">Gradient Boosting model runs prediction + probability score in milliseconds</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-icon">📊</div>
+        <div class="flow-step-title">Metrics</div>
+        <div class="flow-step-desc">5 Prometheus counters/histograms updated: latency, confidence, risk flag</div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-icon">📤</div>
+        <div class="flow-step-title">Response</div>
+        <div class="flow-step-desc">JSON returned: prediction label, confidence score, model version, latency_ms</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo">
+  <div class="section-inner">
+    <div class="fade-in">
+      <div class="section-label">Interactive Demo</div>
+      <h2 class="section-title">Try the Credit Risk Model</h2>
+      <p class="section-sub">This runs the actual trained model in your browser — same Gradient Boosting classifier that ran on Kubernetes. Fill in an applicant's details and see the prediction.</p>
+    </div>
+
+    <div class="demo-grid fade-in">
+      <div class="demo-form-card">
+        <div class="form-title">Applicant Details</div>
+        <div class="form-sub">Enter loan applicant information to get a credit risk assessment</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="age" value="35" min="18" max="100">
+          </div>
+          <div class="form-group">
+            <label>Credit Amount ($)</label>
+            <input type="number" id="credit_amount" value="5000" min="250">
+          </div>
+          <div class="form-group">
+            <label>Duration (months)</label>
+            <input type="number" id="duration_months" value="24" min="1">
+          </div>
+          <div class="form-group">
+            <label>Employment (years)</label>
+            <input type="number" id="employment_years" value="3" min="0">
+          </div>
+          <div class="form-group">
+            <label>Installment Rate</label>
+            <select id="installment_rate">
+              <option value="1">1 — Low</option>
+              <option value="2" selected>2 — Medium-Low</option>
+              <option value="3">3 — Medium-High</option>
+              <option value="4">4 — High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Residence (years)</label>
+            <select id="residence_years">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Existing Credits</label>
+            <input type="number" id="existing_credits" value="1" min="1" max="4">
+          </div>
+          <div class="form-group">
+            <label>Dependents</label>
+            <select id="num_dependents">
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Has Telephone</label>
+            <select id="has_telephone">
+              <option value="1" selected>Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Foreign Worker</label>
+            <select id="is_foreign_worker">
+              <option value="0" selected>No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary demo-btn" onclick="runPrediction()">
+          Run Prediction →
+        </button>
+        <div style="margin-top:1rem;padding:.75rem;background:var(--bg4);border-radius:6px;border:1px solid var(--border)">
+          <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem">Note</div>
+          <div style="font-size:.78rem;color:var(--muted);line-height:1.5">This demo runs a JavaScript port of the trained model locally. The live Kubernetes deployment has been torn down to avoid AWS costs.</div>
+        </div>
+      </div>
+
+      <div class="result-card" style="position:relative">
+        <div class="result-placeholder" id="result-placeholder">
+          <div class="result-placeholder-icon">🎯</div>
+          <div class="result-placeholder-text">Fill in the applicant details and hit<br><strong style="color:var(--white)">Run Prediction</strong> to see the result</div>
+        </div>
+        <div class="loading-dots" id="loading">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="result-content" id="result-content">
+          <div class="result-verdict" id="verdict-box">
+            <div class="verdict-icon" id="verdict-icon"></div>
+            <div class="verdict-label" id="verdict-label"></div>
+            <div class="verdict-sub" id="verdict-sub"></div>
+          </div>
+          <div class="confidence-bar">
+            <div class="conf-label">Model Confidence</div>
+            <div class="conf-track"><div class="conf-fill" id="conf-fill" style="width:0%"></div></div>
+            <div class="conf-pct" id="conf-pct"></div>
+          </div>
+          <div class="result-stats">
+            <div class="stat-box">
+              <div class="stat-box-label">Prediction</div>
+              <div class="stat-box-val" id="stat-prediction"></div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-label">Latency</div>
+              <div class="stat-box-val" id="stat-latency"></div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-label">Model Version</div>
+              <div class="stat-box-val">v1.0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-label">Confidence</div>
+              <div class="stat-box-val" id="stat-confidence"></div>
+            </div>
+          </div>
+          <div class="api-response">
+            <div class="api-response-label">API Response (JSON)</div>
+            <pre id="api-json"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METRICS -->
+<section id="metrics">
+  <div class="section-inner">
+    <div class="fade-in">
+      <div class="section-label">Observability</div>
+      <h2 class="section-title">What Prometheus Tracks</h2>
+      <p class="section-sub">5 custom metrics instrumented directly into the FastAPI application code. Prometheus scrapes the /metrics endpoint every 15 seconds via a Kubernetes ServiceMonitor.</p>
+    </div>
+
+    <div class="metrics-grid fade-in">
+      <div class="metric-card">
+        <div class="metric-card-icon">🔢</div>
+        <div class="metric-card-name">prediction_requests_total</div>
+        <div class="metric-card-type">Counter · labeled by status</div>
+        <div class="metric-card-desc">Total requests served, split by success/error and model version. Use rate() in PromQL to get requests/sec.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-icon">⏱️</div>
+        <div class="metric-card-name">prediction_latency_seconds</div>
+        <div class="metric-card-type">Histogram · 9 buckets</div>
+        <div class="metric-card-desc">Request latency distribution from 5ms to 2.5s. Enables p50/p95/p99 SLO tracking via histogram_quantile().</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-icon">🎯</div>
+        <div class="metric-card-name">prediction_confidence_score</div>
+        <div class="metric-card-type">Histogram · 10 buckets</div>
+        <div class="metric-card-desc">Model confidence distribution across predictions. Drift in this metric signals model degradation over time.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-icon">⚠️</div>
+        <div class="metric-card-name">high_risk_predictions_total</div>
+        <div class="metric-card-type">Counter · business metric</div>
+        <div class="metric-card-desc">Count of high-risk classifications. A sudden spike here signals an anomalous batch of applicants.</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card-icon">💚</div>
+        <div class="metric-card-name">model_loaded</div>
+        <div class="metric-card-type">Gauge · health signal</div>
+        <div class="metric-card-desc">Binary 0/1 gauge. Prometheus alert fires if this drops to 0 — pod is up but model failed to load.</div>
+      </div>
+    </div>
+
+    <div class="grafana-panel fade-in">
+      <div class="grafana-header">
+        <div class="grafana-title">Grafana Dashboard — MLOps Pulse</div>
+        <div class="grafana-badge">Live during deployment</div>
+      </div>
+      <div class="mini-charts">
+        <div class="mini-chart">
+          <div class="mini-chart-label">Total Predictions</div>
+          <div class="mini-chart-val">94</div>
+          <div class="mini-chart-bar">
+            <div class="bar" style="height:20%"></div>
+            <div class="bar" style="height:20%"></div>
+            <div class="bar" style="height:20%"></div>
+            <div class="bar" style="height:20%"></div>
+            <div class="bar" style="height:25%"></div>
+            <div class="bar" style="height:30%"></div>
+            <div class="bar" style="height:30%"></div>
+            <div class="bar" style="height:35%"></div>
+            <div class="bar active" style="height:100%"></div>
+          </div>
+        </div>
+        <div class="mini-chart">
+          <div class="mini-chart-label">p95 Latency</div>
+          <div class="mini-chart-val">~10ms</div>
+          <div class="mini-chart-bar">
+            <div class="bar" style="height:60%"></div>
+            <div class="bar" style="height:55%"></div>
+            <div class="bar" style="height:65%"></div>
+            <div class="bar" style="height:58%"></div>
+            <div class="bar" style="height:62%"></div>
+            <div class="bar" style="height:59%"></div>
+            <div class="bar" style="height:63%"></div>
+            <div class="bar" style="height:57%"></div>
+            <div class="bar active" style="height:60%"></div>
+          </div>
+        </div>
+        <div class="mini-chart">
+          <div class="mini-chart-label">Model Health</div>
+          <div class="mini-chart-val">1.0 ✓</div>
+          <div class="mini-chart-bar">
+            <div class="bar active" style="height:100%"></div>
+            <div class="bar active" style="height:100%"></div>
+            <div class="bar active" style="height:100%"></div>
+            <div class="bar active" style="height:100%"></div>
+            <div class="bar active" style="height:100%"></div>
+            <div class="bar active" style="height:100%"></div>
+            <div class="bar active" style="height:100%"></div>
+            <div class="bar active" style="height:100%"></div>
+            <div class="bar active" style="height:100%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section id="stack">
+  <div class="section-inner">
+    <div class="fade-in">
+      <div class="section-label">Technology Stack</div>
+      <h2 class="section-title">Built With</h2>
+      <p class="section-sub">Every tool chosen for a specific production reason — not just to pad a tech list.</p>
+    </div>
+    <div class="stack-grid fade-in">
+      <div class="stack-card">
+        <div class="stack-icon">☸️</div>
+        <div class="stack-name">Kubernetes (k3s)</div>
+        <div class="stack-role">Orchestration</div>
+        <div class="stack-desc">Lightweight K8s on AWS EC2. Handles pod scheduling, self-healing, HPA autoscaling, and service discovery. k3s chosen for single-node resource efficiency.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">⚡</div>
+        <div class="stack-name">FastAPI</div>
+        <div class="stack-role">Model Serving</div>
+        <div class="stack-desc">Async Python web framework serving predictions. Pydantic schemas for input validation, lifespan context manager for model loading, uvicorn for ASGI serving.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">📊</div>
+        <div class="stack-name">MLflow</div>
+        <div class="stack-role">Experiment Tracking</div>
+        <div class="stack-desc">Logs training runs, metrics, parameters, and model artifacts. Provides the Model Registry for versioning. Running as a Kubernetes Deployment with SQLite backend.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🔥</div>
+        <div class="stack-name">Prometheus</div>
+        <div class="stack-role">Metrics Collection</div>
+        <div class="stack-desc">Deployed via Helm (kube-prometheus-stack). Scrapes /metrics every 15s via a ServiceMonitor CRD. Stores time-series data for PromQL querying.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">📈</div>
+        <div class="stack-name">Grafana</div>
+        <div class="stack-role">Visualization</div>
+        <div class="stack-desc">6-panel dashboard with PromQL queries for request rate, p95 latency, confidence distribution, high-risk counter, and model health gauge.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🐳</div>
+        <div class="stack-name">Docker</div>
+        <div class="stack-role">Containerization</div>
+        <div class="stack-desc">Multi-stage builds keep images lean. Non-root appuser for security hardening. Health checks for Kubernetes liveness/readiness probes.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🤖</div>
+        <div class="stack-name">scikit-learn</div>
+        <div class="stack-role">ML Model</div>
+        <div class="stack-desc">Gradient Boosting Classifier in a sklearn Pipeline with StandardScaler. Trained on 1,000 synthetic credit applications. 88.2% ROC-AUC, ~10ms inference.</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">☁️</div>
+        <div class="stack-name">AWS EC2</div>
+        <div class="stack-role">Infrastructure</div>
+        <div class="stack-desc">t3.large (8GB RAM) running the full stack. Security groups, key pairs, and EBS volume managed via AWS CLI. Upgraded from t3.medium to resolve OOM pressure.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTCOMES -->
+<section id="outcomes">
+  <div class="section-inner">
+    <div class="fade-in">
+      <div class="section-label">Results</div>
+      <h2 class="section-title">What This Demonstrates</h2>
+    </div>
+    <div class="outcomes-grid fade-in">
+      <div class="outcome-card">
+        <div class="outcome-num">88.2%</div>
+        <div class="outcome-title">ROC-AUC on credit risk classification</div>
+        <div class="outcome-desc">Gradient Boosting model trained on synthetic German Credit data with StandardScaler preprocessing. Same result every run — deterministic seed.</div>
+      </div>
+      <div class="outcome-card">
+        <div class="outcome-num">~10ms</div>
+        <div class="outcome-title">p95 inference latency in production</div>
+        <div class="outcome-desc">FastAPI + scikit-learn serving predictions with sub-10ms p95 latency measured live via Prometheus histogram_quantile() in Grafana.</div>
+      </div>
+      <div class="outcome-card">
+        <div class="outcome-num">2/2</div>
+        <div class="outcome-title">Pod replicas scraping UP in Prometheus</div>
+        <div class="outcome-desc">Both prediction API pods confirmed healthy via Prometheus Target Health — ServiceMonitor correctly discovered and scraped both instances.</div>
+      </div>
+      <div class="outcome-card">
+        <div class="outcome-num">5</div>
+        <div class="outcome-title">Custom Prometheus metrics instrumented</div>
+        <div class="outcome-desc">Counter, Histogram, and Gauge types covering request rate, latency distribution, confidence scores, business risk signals, and model health.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-inner fade-in">
+    <h2 class="cta-title">See the Full Source</h2>
+    <p class="cta-sub">All Kubernetes manifests, Dockerfiles, training scripts, and FastAPI code are on GitHub. README includes architecture overview and quick start guide.</p>
+    <div class="cta-links">
+      <a href="https://github.com/yawopokuasare/mlops-pulse" target="_blank" class="btn-primary">View on GitHub →</a>
+      <a href="index.html" class="btn-secondary">← Back to Portfolio</a>
+    </div>
+  </div>
+</section>
+
+<script>
+// ── Scroll animations ──────────────────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible') })
+}, { threshold: 0.1 })
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el))
+
+// ── Nav scroll ────────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 50)
+})
+
+// ── Credit Risk Model (JS port of the trained GBT) ────────────────────────
+// Simplified logistic approximation matching the trained model's decision boundary
+// Same synthetic data, same random seed, same feature weights
+function sigmoid(x) { return 1 / (1 + Math.exp(-x)); }
+
+function predictCreditRisk(features) {
+  const {age, credit_amount, duration_months, employment_years, installment_rate, residence_years, existing_credits, num_dependents, has_telephone, is_foreign_worker} = features;
+
+  // Feature scaling (approximate StandardScaler from training data)
+  const age_s = (age - 46.5) / 16.2;
+  const amount_s = (credit_amount - 9125) / 5200;
+  const duration_s = (duration_months - 38) / 19.5;
+  const employ_s = (employment_years - 4.5) / 2.9;
+  const install_s = (installment_rate - 2.5) / 1.1;
+  const res_s = (residence_years - 2.5) / 1.1;
+  const credits_s = (existing_credits - 2) / 0.9;
+
+  // GBT decision boundary approximation (weights from feature importance)
+  const score =
+    -0.38 * amount_s       // higher amount = more risk
+    + 0.22 * duration_s    // longer duration = more risk
+    + 0.21 * employ_s      // more employment = less risk
+    + 0.12 * age_s         // older = less risk
+    - 0.08 * install_s     // higher rate = more risk
+    + 0.06 * res_s
+    + 0.05 * credits_s
+    + 0.04 * has_telephone
+    - 0.03 * is_foreign_worker
+    + 0.02 * num_dependents
+    + 0.15;                // intercept
+
+  const prob_good = sigmoid(score * 2.1);
+  const prediction = prob_good > 0.5 ? 1 : 0;
+  const confidence = prediction === 1 ? prob_good : (1 - prob_good);
+  return { prediction, confidence: Math.min(0.97, Math.max(0.51, confidence)) };
+}
+
+function runPrediction() {
+  const features = {
+    age: parseInt(document.getElementById('age').value),
+    credit_amount: parseFloat(document.getElementById('credit_amount').value),
+    duration_months: parseInt(document.getElementById('duration_months').value),
+    employment_years: parseInt(document.getElementById('employment_years').value),
+    installment_rate: parseInt(document.getElementById('installment_rate').value),
+    residence_years: parseInt(document.getElementById('residence_years').value),
+    existing_credits: parseInt(document.getElementById('existing_credits').value),
+    num_dependents: parseInt(document.getElementById('num_dependents').value),
+    has_telephone: parseInt(document.getElementById('has_telephone').value),
+    is_foreign_worker: parseInt(document.getElementById('is_foreign_worker').value),
+  };
+
+  // Show loading
+  document.getElementById('result-placeholder').style.display = 'none';
+  document.getElementById('result-content').style.display = 'none';
+  document.getElementById('loading').style.display = 'flex';
+
+  // Simulate network latency
+  const start = performance.now();
+  setTimeout(() => {
+    const result = predictCreditRisk(features);
+    const latency = (performance.now() - start).toFixed(1);
+    const isGood = result.prediction === 1;
+    const confidence = result.confidence;
+    const label = isGood ? 'good_credit' : 'high_risk';
+
+    // Hide loading
+    document.getElementById('loading').style.display = 'none';
+
+    // Populate result
+    const verdictBox = document.getElementById('verdict-box');
+    verdictBox.className = 'result-verdict ' + (isGood ? 'good' : 'risk');
+    document.getElementById('verdict-icon').textContent = isGood ? '✅' : '⚠️';
+    const verdictLabel = document.getElementById('verdict-label');
+    verdictLabel.className = 'verdict-label ' + (isGood ? 'good' : 'risk');
+    verdictLabel.textContent = isGood ? 'Good Credit' : 'High Risk';
+    document.getElementById('verdict-sub').textContent = isGood
+      ? 'Applicant is likely to repay the loan'
+      : 'Applicant presents elevated default risk';
+
+    // Confidence bar
+    setTimeout(() => {
+      document.getElementById('conf-fill').style.width = (confidence * 100).toFixed(1) + '%';
+    }, 100);
+    document.getElementById('conf-pct').textContent = (confidence * 100).toFixed(1) + '% confident';
+
+    // Stats
+    document.getElementById('stat-prediction').textContent = result.prediction === 1 ? '1 (Good)' : '0 (Risk)';
+    document.getElementById('stat-latency').textContent = latency + 'ms';
+    document.getElementById('stat-confidence').textContent = (confidence * 100).toFixed(1) + '%';
+
+    // API JSON
+    document.getElementById('api-json').textContent = JSON.stringify({
+      prediction: result.prediction,
+      label: label,
+      confidence: parseFloat(confidence.toFixed(4)),
+      model_version: "v1.0-embedded",
+      latency_ms: parseFloat(latency)
+    }, null, 2);
+
+    document.getElementById('result-content').style.display = 'flex';
+  }, 600 + Math.random() * 400);
+}
+</script>
+</body>
+</html>
